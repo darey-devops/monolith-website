@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-liveclass
+  name: {{ include "monolith-website.fullname" . }}
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: "monolith-website.liveclass.training.darey.io"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "monolith-website.fullname" . }}
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - monolith-website.liveclass.training.darey.io
+    secretName: monolith-website.liveclass.training.darey.io

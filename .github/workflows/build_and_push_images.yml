@@ -11,6 +11,7 @@ on:
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  appVersion: 1.0.1
 
 jobs:
   build-and-push:
@@ -31,5 +32,5 @@ jobs:
 
       - name: Build and push monolith Docker image
         run: |
-          docker build -t dareyregistry/monolith .
-          docker push dareyregistry/monolith
+          docker build -t dareyregistry/monolith:${{ env.appVersion }} .
+          docker push dareyregistry/monolith:${{ env.appVersion }}
