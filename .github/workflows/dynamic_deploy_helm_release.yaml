@@ -28,6 +28,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
+      - name: Package Helm Chart
+        run: |
+            cd helm
+            rm -f *.tgz
+            helm package monolith-website
+
 # The command ::set-output name=path::$(find helm -name '*.tgz') is not a standard bash command. It's a syntax used in GitHub Actions workflows to set an output value for use in subsequent steps.
 # The syntax ::set-output name=<name>::<value> is used to set the value of an output variable.
 # In the specific example you mentioned, the command ::set-output name=path::$(find helm -name '*.tgz') sets the output variable named path to the result of the find command, which searches for files with the .tgz extension in the helm directory.

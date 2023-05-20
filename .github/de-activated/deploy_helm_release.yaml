@@ -28,7 +28,10 @@ jobs:
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
       - name: Package Helm Chart
-        run: helm package helm/monolith-website
+        run: |
+            cd helm
+            rm -f *.tgz
+            helm package monolith-website
 
       - name: Upload Helm Chart to S3
         run: aws s3 cp monolith-website-0.1.0.tgz s3://liveclass-helm-repo/monolith-website-0.1.0.tgz
