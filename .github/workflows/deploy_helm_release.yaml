@@ -10,10 +10,11 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: PROD
 
     env:
-      AWS_ACCESS_KEY_ID: ${{ PROD.secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ PROD.secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: "eu-west-2"
 
     steps:
