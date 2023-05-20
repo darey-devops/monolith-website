@@ -39,7 +39,10 @@ jobs:
         run: helm fetch  monolith-website/monolith-website
 
       - name: Extract Helm Chart
-        run: tar -zxvf monolith-website-0.1.0.tgz
+        run: |
+            tar -zxvf monolith-website-*.tgz
+            mv monolith-website-* helm
+
 
       - name: Deploy Helm Chart
         uses: bitovi/github-actions-deploy-eks-helm@v1.2.4
@@ -47,7 +50,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           cluster-name: ${{ env.EKS_CLUSTER_NAME }}
-          chart-dir: ./monolith-website
+          chart-dir: ./helm/monolith-website
           release-name: monolith-website
           namespace: ${{ env.K8S_NAMESPACE }}
           values: prod/values.yaml
