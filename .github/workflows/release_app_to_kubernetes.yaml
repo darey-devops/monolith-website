@@ -6,28 +6,22 @@ on:
       - "Publish Helm Chart (Dynamic version)"
     types:
       - completed
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: PROD
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: eu-west-2
       EKS_CLUSTER_NAME: nonprod-dev
-      S3_BUCKET_NAME: darey-helm-repo
+      S3_BUCKET_NAME: liveclass-helm-repo
       K8S_NAMESPACE: liveclass
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Download Helm Chart from S3
-        run: aws s3 cp s3://${{ env.S3_BUCKET_NAME }}/${{ steps.helm-chart-filename.outputs.helmchart_tgz_file }} .
-
-      - name: Extract Helm Chart
-        run: tar -zxvf ${{ steps.helm-chart-filename.outputs.helmchart_tgz_file }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -35,6 +29,15 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Add Helm Repo
+        run: helm repo add monolith-website s3://liveclass-helm-repo/charts
+
+      - name: Download the helm chart
+        run: helm fetch  monolith-website/monolith-website
+
+      - name: Extract Helm Chart
+        run: tar -zxvf monolith-website-0.1.0.tgz
 
       - name: Deploy Helm Chart
         uses: bitovi/github-actions-deploy-eks-helm@v1.2.4
