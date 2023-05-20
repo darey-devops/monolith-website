@@ -39,6 +39,9 @@ jobs:
       - name: Upload Index.yaml to S3
         run: aws s3 cp index.yaml s3://darey-helm-repo/charts/index.yaml
 
+      - name: Install the Helm S3 plugin
+        run: helm plugin install https://github.com/hypnoglow/helm-s3.git
+
       - name: Configure Helm Repository
         run: helm repo add monolith-website s3://darey-helm-repo/charts
 
