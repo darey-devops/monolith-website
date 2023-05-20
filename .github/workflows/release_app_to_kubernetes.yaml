@@ -30,6 +30,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Install the Helm S3 plugin
+        run: helm plugin install https://github.com/hypnoglow/helm-s3.git
+
       - name: Add Helm Repo
         run: helm repo add monolith-website s3://liveclass-helm-repo/charts
 
