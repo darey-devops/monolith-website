@@ -1,0 +1,44 @@
+name: Publish Helm Chart
+
+on:
+  workflow_run:
+    workflows:
+      - "build_and_push_images.yml"
+    types:
+      - completed
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: eu-west-2
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install AWS CLI
+        run: |
+          apt-get update
+          apt-get install -y awscli
+
+      - name: Package Helm Chart
+        run: helm package monolith-website
+
+      - name: Upload Helm Chart to S3
+        run: aws s3 cp monolith-website-0.1.0.tgz s3://darey-helm-repo/monolith-website-0.1.0.tgz
+
+      - name: Generate or Update Helm Chart Index
+        run: helm repo index --url https://darey-helm-repo.s3.amazonaws.com/charts/ .
+
+      - name: Upload Index.yaml to S3
+        run: aws s3 cp index.yaml s3://darey-helm-repo/charts/index.yaml
+
+      - name: Configure Helm Repository
+        run: helm repo add monolith-website s3://darey-helm-repo/charts
+
+      - name: Push Helm Chart to S3 Repository
+        run: helm s3 push --force monolith-website-0.1.0.tgz monolith-website
