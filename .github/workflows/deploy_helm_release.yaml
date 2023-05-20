@@ -3,7 +3,7 @@ name: Publish Helm Chart
 on:
   workflow_run:
     workflows:
-      - "build_and_push_images.yml"
+      - "Build and Push Docker Images"
     types:
       - completed
 
