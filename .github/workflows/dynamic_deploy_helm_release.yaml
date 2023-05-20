@@ -1,0 +1,55 @@
+name: Publish Helm Chart
+
+on:
+  workflow_run:
+    workflows:
+      - "Build and Push Docker Images"
+    types:
+      - completed
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: "eu-west-2"
+      S3_BUCKET_NAME: darey-helm-repo
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Determine Helm Chart Path
+        id: helm-chart-path
+        run: echo "::set-output name=path::$(find helm -name '*.tgz')"
+
+      - name: Retrieve Helm Chart Filename
+        id: helm-chart-filename
+        run: echo "::set-output name=filename::$(basename ${{ steps.helm-chart-path.outputs.path }})"
+
+      - name: Upload Helm Chart to S3
+        run: aws s3 cp ${{ steps.helm-chart-path.outputs.path }} s3://${{ env.S3_BUCKET_NAME }}/${{ steps.helm-chart-filename.outputs.filename }}
+
+      - name: Generate or Update Helm Chart Index
+        run: helm repo index --url s3://${{ env.S3_BUCKET_NAME }}/charts/ .
+
+      - name: Upload Index.yaml to S3
+        run: aws s3 cp index.yaml s3://${{ env.S3_BUCKET_NAME }}/charts/index.yaml
+
+      - name: Install the Helm S3 plugin
+        run: helm plugin install https://github.com/hypnoglow/helm-s3.git
+
+      - name: Configure Helm Repository
+        run: helm repo add monolith-website s3://${{ env.S3_BUCKET_NAME }}/charts
+
+      - name: Push Helm Chart to S3 Repository
+        run: helm s3 push --force ${{ steps.helm-chart-path.outputs.path }} monolith-website
